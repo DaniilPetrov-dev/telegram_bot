@@ -2,7 +2,7 @@ import telebot
 import random
 import nltk
 
-token = "5049484687:AAGPG0cU2SltEi_UvfEEQORDnsAp7QmeNyA"
+token = ""
 bot = telebot.TeleBot(token)
 users = {}
 
