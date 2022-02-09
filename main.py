@@ -1,14 +1,19 @@
 import telebot
 import random
+import nltk
 
-token = ""
+token = "5049484687:AAGPG0cU2SltEi_UvfEEQORDnsAp7QmeNyA"
 bot = telebot.TeleBot(token)
 users = {}
 
 QUESTIONS = {
-    'Какой мусс в исфахане?': ['малиновый', 'малина', 'с малиной', 'из малины'],
-    'Какого цвета фисташковый трюфель?': ['зеленый'],
-    'Сколько сырников в порции?': ['три', '3']
+    'Какое сабле в пекане?': ['миндальное', 'миндаль', 'с миндалём', 'из миндаля'],
+    'Какой (или какие) крем в ванильном флане?': ['заварной' 'заварной крем'],
+    'С чем ганаш, который идет в большиство круассанов и макарунов?': ['белый шоколад', 'с белым шоколадом'],
+    'Какой (или какие) крем в красном бархате?': ['крем-чиз', 'сырный', 'маскарпоне', 'из сыра', 'кремчиз и маскарпоне', 'кремчиз'],
+    'Какой соус в кишах?': ['сливочно-сырный', 'сливочный с сыром'],
+    'Какое пюре в фрамбуа?': ['малиновое', 'с малиной', 'из малины', 'малина'],
+    'Из чего сделаны крышки макоронов?': ['меренга', 'из меренги', 'итальянская меренга', 'из итальянской меренги'],
 }
 
 
@@ -37,19 +42,30 @@ class Test:
 
     def test(self, message):
         bot.send_message(message.chat.id, self.random_questions[self.i])
-        print(self.i)
+        print(self.i)  # вывод на консоль для проверки
         bot.register_next_step_handler(message, self.chek)
 
     def chek(self, message):
-        if message.text.lower() in QUESTIONS[self.random_questions[self.i]]:
-            bot.send_message(message.chat.id, 'Правильно')
-        else:
-            bot.send_message(message.chat.id, 'Неправильно')
+        answer = message.text.lower()
+        r = 0
+        for right_answer in QUESTIONS[self.random_questions[self.i]]:
+            if nltk.edit_distance(answer, right_answer) / max(len(answer), len(right_answer)) < 0.4:
+                bot.send_message(message.chat.id, 'Правильно')
+                self.count += 1
+                break
+            else:
+                r += 1
+            if r == len(QUESTIONS[self.random_questions[self.i]]):
+                bot.send_message(message.chat.id, 'Неправильно')
+
         self.i += 1
 
-        if self.i == 3:
+        if self.i == len(self.random_questions):
             bot.send_message(message.chat.id, 'Тест окончен')
+            bot.send_message(
+                message.chat.id, f'Правильных ответов: {self.count} из 7')
             self.i = 0
+            self.count = 0
         else:
             self.test(message)
 
